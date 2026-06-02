@@ -9,54 +9,12 @@ function generateRoomCode() {
   return Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 }
 
-async function tryDiscordInit() {
-  try {
-    const { DiscordSDK } = await import("@discord/embedded-app-sdk");
-    const sdk = new DiscordSDK(process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID || "DEV");
-
-    await Promise.race([
-      sdk.ready(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 3000)),
-    ]);
-
-    const { code } = await sdk.commands.authorize({
-      client_id: process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
-      response_type: "code",
-      state: "",
-      prompt: "none",
-      scope: ["identify"],
-    });
-
-    const res = await fetch("/api/auth/discord", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    });
-    const { access_token } = await res.json();
-    await sdk.commands.authenticate({ access_token });
-
-    const meRes = await fetch("https://discord.com/api/users/@me", {
-      headers: { Authorization: `Bearer ${access_token}` },
-    });
-    const me = await meRes.json();
-
-    return {
-      discordUserId: me.id,
-      username: me.global_name || me.username,
-      avatar: me.avatar,
-      instanceId: sdk.instanceId,
-    };
-  } catch {
-    return null;
-  }
-}
 
 export default function Home() {
   const router = useRouter();
   const socketRef = useRef(null);
 
   const [view, setView] = useState("landing");
-  const [discordUser, setDiscordUser] = useState(null);
   const [username, setUsername] = useState("");
   const [maxPlayers, setMaxPlayers] = useState(4);
   const [joinCode, setJoinCode] = useState("");
@@ -68,12 +26,6 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    tryDiscordInit().then((user) => {
-      if (user) {
-        setDiscordUser(user);
-        setUsername(user.username);
-      }
-    });
     return () => socketRef.current?.disconnect();
   }, []);
 
@@ -106,15 +58,12 @@ export default function Home() {
     [router]
   );
 
-  const buildUserData = () =>
-    discordUser
-      ? { ...discordUser, username: username.trim() }
-      : {
-          discordUserId: "user_" + Math.random().toString(36).slice(2, 8),
-          username: username.trim(),
-          avatar: null,
-          instanceId: "web_instance",
-        };
+  const buildUserData = () => ({
+    discordUserId: "user_" + Math.random().toString(36).slice(2, 8),
+    username: username.trim(),
+    avatar: null,
+    instanceId: "web_instance",
+  });
 
   const handleCreate = () => {
     if (!username.trim()) return;
