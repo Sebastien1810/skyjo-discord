@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Game {
+  id          String        @id @default(cuid())
+  instanceId  String        @unique
+  createdAt   DateTime      @default(now())
+  finishedAt  DateTime?
+  winnerId    String?
+  rounds      Round[]
+}
+
+model Round {
+  id          String        @id @default(cuid())
+  gameId      String
+  number      Int
+  startedAt   DateTime      @default(now())
+  finishedAt  DateTime?
+  game        Game          @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  scores      PlayerScore[]
+}
+
+model PlayerScore {
+  id            String  @id @default(cuid())
+  roundId       String
+  discordUserId String
+  username      String
+  score         Int
+  doubled       Boolean @default(false)
+  round         Round   @relation(fields: [roundId], references: [id], onDelete: Cascade)
+}
