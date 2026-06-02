@@ -1,8 +1,17 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+:root {
+  --teal: #00D4D4;
+  --bg: #0a0a14;
+  --card-bg: #12121f;
+  --border: #1e1e35;
+  --text: #e0e0e0;
+  --muted: #6b7280;
+}
+
 body {
-  background: #0f0f1a;
-  color: #e0e0e0;
+  background: var(--bg);
+  color: var(--text);
   font-family: 'Segoe UI', system-ui, sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
@@ -14,6 +23,21 @@ button {
 }
 
 button:disabled {
-  opacity: 0.4;
   cursor: not-allowed;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--teal) !important;
+  box-shadow: 0 0 0 2px rgba(0, 212, 212, 0.12);
+}
+
+input::placeholder {
+  color: #2e2e50;
+}
+
+select option {
+  background: #0f0f1e;
+  color: var(--text);
 }
