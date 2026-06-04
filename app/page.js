@@ -31,7 +31,8 @@ export default function Home() {
 
   const connectSocket = useCallback(
     (userData, code, hosting, playersMax) => {
-      const socket = io();
+      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+      const socket = socketUrl ? io(socketUrl) : io();
       socketRef.current = socket;
       setMyId(userData.discordUserId);
       setRoomCode(code);
@@ -94,7 +95,7 @@ export default function Home() {
       <div style={s.page}>
         <div style={s.card}>
           <h1 style={s.title}>SKYJO</h1>
-          <p style={s.subtitle}>Discord Activity</p>
+          <p style={s.subtitle}>Jeu de cartes multijoueur</p>
 
           {error && <div style={s.errorBox}>{error}</div>}
 
